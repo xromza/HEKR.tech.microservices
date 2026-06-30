@@ -1,0 +1,44 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: hekr-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - hekr-network
+    
+  postgres:
+    image: postgres:16-alpine
+    container_name: hekr-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: hekr_store_db
+      POSTGRES_USER: hekr_admin
+      POSTGRES_PASSWORD: hekr_password
+    volumes:
+      - hekr-db-data:/var/lib/postgresql/data
+    networks:
+      - hekr-network
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: hekr-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - hekr-redis-data:/data
+    networks:
+      - hekr-network
+
+volumes:
+  hekr-db-data:
+  hekr-redis-data:
+
+networks:
+  hekr-network:
+    driver: bridge
