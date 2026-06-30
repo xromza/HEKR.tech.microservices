@@ -1,0 +1,33 @@
+server:
+    port: 8080
+
+gateway:
+    routes:
+        - path: "/api/v1/catalog/**"
+          uri: "http://localhost:8081"
+        - path: "/api/v1/orders/**"
+          uri: "http://localhost:8082"
+        - path: "/api/v1/users/**"
+          uri: "http://localhost:8083"
+        - path: "/api/v1/warehouse/**"
+          uri: "http://localhost:8084"
+        - path: "/api/v1/stock/**"
+          uri: "http://localhost:8084"
+
+jwt:
+    secret: "MzIzYjNjYTU1MjE1NWRmM2ZhMTZjOWRhZjIzODM1OTg3ZjRlZDQ1NTNlZjQ0MWFiYTZlYWY2YTlmZWUzNTFlYw=="
+    expiration: 3600000
+    refresh-token:
+        expiration: 604800000
+spring:
+    application:
+        name: api-gateway
+    
+management:
+    endpoints:
+        web:
+            exposure:
+                include: health, info, metrics
+    endpoint:
+        health:
+            show-details: always

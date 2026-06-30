@@ -1,0 +1,5 @@
+/home/xromza/hekr_store_microservices/backend/api-gateway/src/main/java/ru/xromza/gateway/config/GatewayProperties.java
+/home/xromza/hekr_store_microservices/backend/api-gateway/src/main/java/ru/xromza/gateway/utils/JwtUtil.java
+/home/xromza/hekr_store_microservices/backend/api-gateway/src/main/java/ru/xromza/gateway/utils/GatewayFilter.java
+/home/xromza/hekr_store_microservices/backend/api-gateway/src/main/java/ru/xromza/gateway/ApiGatewayApplication.java
+/home/xromza/hekr_store_microservices/backend/api-gateway/src/main/java/ru/xromza/gateway/config/WebClientConfig.java
