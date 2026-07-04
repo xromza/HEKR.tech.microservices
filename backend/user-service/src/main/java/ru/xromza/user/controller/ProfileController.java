@@ -1,11 +1,11 @@
-package com.hekr.store.controller;
+package ru.xromza.user.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hekr.store.dto.user.UserEditDto;
-import com.hekr.store.dto.user.UserResponseDto;
-import com.hekr.store.service.ProfileService;
+import ru.xromza.user.dto.UserEditDto;
+import ru.xromza.user.dto.UserResponseDto;
+import ru.xromza.user.service.ProfileService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping("/api/v1/profile")
+@RequestMapping("/api/v1/user/profile")
 @RequiredArgsConstructor
 public class ProfileController {
     private final ProfileService profileService;

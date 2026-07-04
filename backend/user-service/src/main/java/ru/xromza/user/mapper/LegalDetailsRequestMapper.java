@@ -1,7 +1,7 @@
-package com.hekr.store.mapper.legal_details;
+package ru.xromza.user.mapper;
 
-import com.hekr.store.dto.legal_details.LegalDetailsRequestDto;
-import com.hekr.store.model.legal_details.LegalDetails;
+import ru.xromza.user.dto.LegalDetailsRequestDto;
+import ru.xromza.user.model.LegalDetails;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

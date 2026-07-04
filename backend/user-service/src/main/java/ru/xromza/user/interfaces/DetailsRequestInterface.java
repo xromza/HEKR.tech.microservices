@@ -1,9 +1,9 @@
-package com.hekr.store.interfaces;
+package ru.xromza.user.interfaces;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.hekr.store.dto.individual_details.IndividualDetailsRequestDto;
-import com.hekr.store.dto.legal_details.LegalDetailsRequestDto;
+import ru.xromza.user.dto.IndividualDetailsRequestDto;
+import ru.xromza.user.dto.LegalDetailsRequestDto;
 
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,

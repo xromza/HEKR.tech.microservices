@@ -1,8 +1,8 @@
-package com.hekr.store.dto.individual_details;
+package ru.xromza.user.dto;
 
 import java.time.LocalDate;
 
-import com.hekr.store.interfaces.DetailsResponseInterface;
+import ru.xromza.user.interfaces.DetailsResponseInterface;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

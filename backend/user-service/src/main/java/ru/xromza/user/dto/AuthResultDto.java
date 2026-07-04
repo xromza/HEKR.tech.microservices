@@ -1,19 +1,16 @@
 package ru.xromza.user.dto;
 
-import ru.xromza.user.utils.UserRole;
-
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import ru.xromza.user.utils.UserRole;
 
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class AuthResponseDto {
+@Getter
+@Setter
+public class AuthResultDto {
     private String accessToken;
     @Builder.Default
     private String type = "Bearer";

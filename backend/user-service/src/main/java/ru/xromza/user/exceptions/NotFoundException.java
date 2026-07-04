@@ -1,4 +1,4 @@
-package com.hekr.store.exceptions;
+package ru.xromza.user.exceptions;
 
 public class NotFoundException extends RuntimeException {
     public NotFoundException(String message) {

@@ -1,7 +1,7 @@
-package com.hekr.store.mapper.individual_details;
+package ru.xromza.user.mapper;
 
-import com.hekr.store.dto.individual_details.IndividualDetailsResponseDto;
-import com.hekr.store.model.individual_details.IndividualDetails;
+import ru.xromza.user.dto.IndividualDetailsResponseDto;
+import ru.xromza.user.model.IndividualDetails;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

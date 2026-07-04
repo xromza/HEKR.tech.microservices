@@ -1,4 +1,4 @@
-package com.hekr.store.interfaces;
+package ru.xromza.user.interfaces;
 
 public interface DetailsResponseInterface {
     

@@ -1,4 +1,4 @@
-package com.hekr.store.exceptions;
+package ru.xromza.user.exceptions;
 
 public class AuthException extends RuntimeException {
     public AuthException(String message) {

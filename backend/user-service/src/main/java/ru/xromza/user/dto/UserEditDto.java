@@ -1,4 +1,4 @@
-package com.hekr.store.dto.user;
+package ru.xromza.user.dto;
 
 import java.time.LocalDate;
 

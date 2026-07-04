@@ -1,11 +1,9 @@
-package com.hekr.store.dto.user;
+package ru.xromza.user.dto;
 
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.hekr.store.dto.individual_details.IndividualDetailsResponseDto;
-import com.hekr.store.dto.legal_details.LegalDetailsResponseDto;
-import com.hekr.store.interfaces.DetailsResponseInterface;
+import ru.xromza.user.interfaces.DetailsResponseInterface;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

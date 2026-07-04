@@ -1,7 +1,7 @@
-package com.hekr.store.dto.legal_details;
+package ru.xromza.user.dto;
 
-import com.hekr.store.interfaces.DetailsRequestInterface;
-import com.hekr.store.utils.ClientType;
+import ru.xromza.user.interfaces.DetailsRequestInterface;
+import ru.xromza.user.utils.ClientType;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;

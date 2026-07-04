@@ -1,6 +1,6 @@
-package com.hekr.store.dto.auth;
+package ru.xromza.user.dto;
 
-import com.hekr.store.interfaces.DetailsRequestInterface;
+import ru.xromza.user.interfaces.DetailsRequestInterface;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;

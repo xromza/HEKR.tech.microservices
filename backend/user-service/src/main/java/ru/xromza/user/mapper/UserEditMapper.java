@@ -1,4 +1,4 @@
-package com.hekr.store.mapper.user;
+package ru.xromza.user.mapper;
 
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
@@ -6,10 +6,10 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.NullValuePropertyMappingStrategy;
 
-import com.hekr.store.dto.user.UserEditDto;
-import com.hekr.store.model.individual_details.IndividualDetails;
-import com.hekr.store.model.legal_details.LegalDetails;
-import com.hekr.store.model.user.User;
+import ru.xromza.user.dto.UserEditDto;
+import ru.xromza.user.model.IndividualDetails;
+import ru.xromza.user.model.LegalDetails;
+import ru.xromza.user.model.User;
 
 @Mapper(
         componentModel = "spring",

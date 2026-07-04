@@ -2,15 +2,16 @@ package ru.xromza.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthRequestDto {
-    
-    private String login;
-    private String password;
+@Getter
+@Setter
+@Builder
+public class StatusDto {
+    private String status;
+    private String description;
 }

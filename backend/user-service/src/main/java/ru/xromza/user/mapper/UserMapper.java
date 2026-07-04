@@ -1,14 +1,14 @@
-package com.hekr.store.mapper.user;
+package ru.xromza.user.mapper;
 
-import com.hekr.store.dto.auth.UserRegistrationDto;
-import com.hekr.store.dto.individual_details.IndividualDetailsRequestDto;
-import com.hekr.store.dto.individual_details.IndividualDetailsResponseDto;
-import com.hekr.store.dto.legal_details.LegalDetailsRequestDto;
-import com.hekr.store.dto.legal_details.LegalDetailsResponseDto;
-import com.hekr.store.dto.user.UserResponseDto;
-import com.hekr.store.model.individual_details.IndividualDetails;
-import com.hekr.store.model.legal_details.LegalDetails;
-import com.hekr.store.model.user.User;
+import ru.xromza.user.dto.UserRegistrationDto;
+import ru.xromza.user.dto.IndividualDetailsRequestDto;
+import ru.xromza.user.dto.IndividualDetailsResponseDto;
+import ru.xromza.user.dto.LegalDetailsRequestDto;
+import ru.xromza.user.dto.LegalDetailsResponseDto;
+import ru.xromza.user.dto.UserResponseDto;
+import ru.xromza.user.model.IndividualDetails;
+import ru.xromza.user.model.LegalDetails;
+import ru.xromza.user.model.User;
 
 
 import java.util.List;

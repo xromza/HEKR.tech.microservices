@@ -1,17 +1,21 @@
-package com.hekr.store.dto.auth;
+package ru.xromza.user.dto;
 
-import com.hekr.store.model.user.UserToken;
-
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import ru.xromza.user.utils.UserRole;
 
 @Builder
 @Getter
 @Setter
 public class AuthResult {
-    private AuthResponseDto authResponseDto;
-    private UserToken refreshToken;
     private String accessToken;
-    private long refreshTokenDuration;
+    private String refreshToken;
+    @Builder.Default
+    private String type = "Bearer";
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
+    private String description;
 }

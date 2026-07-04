@@ -1,4 +1,4 @@
-package com.hekr.store.dto.auth;
+package ru.xromza.user.dto;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
