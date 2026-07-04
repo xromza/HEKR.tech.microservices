@@ -5,9 +5,11 @@ gateway:
     routes:
         - path: "/api/v1/catalog/**"
           uri: "http://localhost:8081"
+        - path: "/api/v1/cart/**"
+          uri: "http://localhost:8081"
         - path: "/api/v1/orders/**"
           uri: "http://localhost:8082"
-        - path: "/api/v1/users/**"
+        - path: "/api/v1/user/**"
           uri: "http://localhost:8083"
         - path: "/api/v1/warehouse/**"
           uri: "http://localhost:8084"
