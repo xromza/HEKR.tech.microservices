@@ -1,12 +1,9 @@
 package ru.xromza.catalog.controller;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -14,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import ru.xromza.catalog.dto.CartItemRequestDto;
-import ru.xromza.catalog.dto.CartItemResponseDto;
 import ru.xromza.catalog.dto.CartResponseDto;
 import ru.xromza.catalog.service.CartService;
 
@@ -28,36 +24,30 @@ public class CartController {
     private final CartService cartService;
 
     @GetMapping
-    public ResponseEntity<CartResponseDto> getCart(@AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(cartService.getCart(userDetails));
+    public ResponseEntity<CartResponseDto> getCart(
+            @RequestHeader("X-User-Id") Long userId) {
+        return ResponseEntity.ok(cartService.getCart(userId));
     }
 
     @PostMapping
-    public ResponseEntity<CartItemResponseDto> changeQuantity(@AuthenticationPrincipal UserDetails userDetails,
+    public ResponseEntity<CartResponseDto> changeQuantity(
+            @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody CartItemRequestDto dto) {
-        return ResponseEntity.ok(cartService.addOrUpdateItem(userDetails, dto));
+        return ResponseEntity.ok(cartService.addOrUpdateItem(userId, dto));
     }
 
     @DeleteMapping("/{variantId}")
     public ResponseEntity<Void> deleteSingle(
             @RequestHeader("X-User-Id") Long userId,
-            @RequestHeader("X-User-Role") String role,
-            @PathVariable(name = "variantId") Long variantId) {
-        cartService.deleteItem(userDetails, variantId);
+            Long variantId) {
+        cartService.removeFromCart(userId, variantId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @DeleteMapping
     public ResponseEntity<Void> deleteAll(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        cartService.deleteAll(userDetails);
+            @RequestHeader("X-User-Id") Long userId) {
+        cartService.clearCart(userId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
-
-    @PostMapping("/migrate")
-    public CartResponseDto migrateCart(@RequestBody @Valid List<CartItemRequestDto> dto, @AuthenticationPrincipal UserDetails userDetails) {
-        return cartService.migrateCart(userDetails, dto);
-    }
-    
-
 }

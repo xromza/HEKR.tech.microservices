@@ -43,8 +43,4 @@ public class CartResponseDto {
 
     @Schema(description = "Общая стоимость корзины", example = "450.00")
     private BigDecimal totalPrice;
-    @Schema(description = "Применены ли скидки к корзине", example = "false")
-    private Boolean discountApplied;
-    @Schema(description = "Возможно ли оформить заказ", example = "true")
-    private Boolean canCheckout;
 }
