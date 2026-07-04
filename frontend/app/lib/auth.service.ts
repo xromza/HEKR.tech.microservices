@@ -29,7 +29,7 @@ export async function refreshToken({
     try {
         setLoading(true);
 
-        const res = await api.post<AuthAction>("/v1/auth/refresh");
+        const res = await api.post<AuthAction>("/v1/user/auth/refresh");
         setData(res.data)
         console.debug("REFRESH SUCCESSFUL: ", res.data);
         updateToken(res.data.accessToken)
@@ -45,7 +45,7 @@ export async function refreshToken({
 
 export async function verifySession(): Promise<{ isValid: boolean; status?: number }> {
     try {
-        const res = await api.get("/v1/auth/verify", {
+        const res = await api.get("/v1/user/auth/verify", {
             withCredentials: true
         });
         return { isValid: true, status: res.status };
@@ -73,7 +73,7 @@ export async function login({
         setLoading(true);
         setError(null);
 
-        const loginRes = await api.post<AuthAction>("/v1/auth/login", {
+        const loginRes = await api.post<AuthAction>("/v1/user/auth/login", {
             login: loginValue,
             password: passwordValue
         });
@@ -121,7 +121,7 @@ export async function logout(
     try {
 
         setLoading(true);
-        const logoutRes = await api.post<LogoutStatus>("/v1/auth/logout");
+        const logoutRes = await api.post<LogoutStatus>("/v1/user/auth/logout");
         console.log("LOGOUT SUCCESSFUL: ", logoutRes.data);
     } catch (err: any) {
         const msg =
@@ -154,7 +154,7 @@ export async function register({
     try {
         setLoading(true);
         setError(null);
-        const registerRes = await api.post<AuthAction>("/v1/auth/register", {
+        const registerRes = await api.post<AuthAction>("/v1/user/auth/register", {
             login: login,
             password: password,
             phone: phone,
