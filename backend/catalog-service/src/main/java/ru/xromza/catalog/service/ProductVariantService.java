@@ -48,13 +48,13 @@ public class ProductVariantService {
         return productVariantsRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Вариант товара не найден"));
     }
-
+    @Transactional(readOnly = true)
     public ProductDtoInterface findProductByVariantId(Long variantId) {
         return productMapper.toResponse(
                 getProductVariantById(variantId).getProduct());
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public Map<Long, ProductVariant> getAllVariantsByIds(List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             return Map.of();
@@ -64,6 +64,11 @@ public class ProductVariantService {
         return variants.stream()
                 .collect(Collectors.toMap(variant -> variant.getId(), variant -> variant));
 
+    }
+
+    @Transactional(readOnly = true)
+    public boolean existsById(Long variantId) {
+        return productVariantsRepository.existsById(variantId);
     }
 
 }

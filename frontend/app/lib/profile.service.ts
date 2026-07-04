@@ -18,7 +18,7 @@ export async function getProfile({
         setData(null);
         setError(null);
 
-        const res = await api.get<ProfileInterface>("/v1/profile",
+        const res = await api.get<ProfileInterface>("/v1/user/profile",
             {
                 withCredentials: true
             }
@@ -69,7 +69,7 @@ export async function editProfileDetails({
     try {
         setLoading(true);
         setError(null);
-        const res = await api.patch<ProfileInterface>(`/v1/profile`, {
+        const res = await api.patch<ProfileInterface>(`/v1/user/profile`, {
             password: password,
             phone: phone,
             email: email,

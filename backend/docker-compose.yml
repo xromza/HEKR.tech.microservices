@@ -27,6 +27,7 @@ services:
 
   redis:
     image: redis:7.2-alpine
+    command: redis-server --maxmemory 512mb  --maxmemory-policy allkeys-lru
     container_name: hekr-redis
     ports:
       - "6379:6379"
