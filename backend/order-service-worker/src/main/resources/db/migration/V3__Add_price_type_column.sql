@@ -1,0 +1,4 @@
+BEGIN;
+TRUNCATE orders CASCADE;
+ALTER TABLE order_items ADD COLUMN price_type TEXT NOT NULL;
+COMMIT;

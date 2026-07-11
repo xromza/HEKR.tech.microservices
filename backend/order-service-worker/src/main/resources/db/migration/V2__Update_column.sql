@@ -1,0 +1,1 @@
+ALTER TABLE order_status_history ALTER COLUMN comment DROP NOT NULL;
