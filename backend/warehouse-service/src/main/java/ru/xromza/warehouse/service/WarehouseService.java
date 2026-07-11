@@ -28,7 +28,5 @@ public class WarehouseService {
         Warehouse warehouse = Warehouse.builder()
                 .address(address).build();
         return warehouseRepository.save(warehouse);
-
     }
-
 }
