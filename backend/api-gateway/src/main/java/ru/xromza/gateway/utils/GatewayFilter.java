@@ -27,6 +27,9 @@ public class GatewayFilter implements WebFilter {
     private final JwtUtil jwtUtil;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
+    private final List<String> forbiddenPaths = List.of(
+            "/api/v1/internal/**");
+
     private final List<String> openPaths = List.of(
             "/api/v1/user/auth/login",
             "/api/v1/user/auth/register",
@@ -37,13 +40,18 @@ public class GatewayFilter implements WebFilter {
     private final List<String> cookiePaths = List.of(
             "/api/v1/user/auth/refresh");
     private final List<String> bearerPaths = List.of(
-        "/api/v1/user/auth/verify",
-        "/api/v1/cart"
-    );
+            "/api/v1/user/auth/verify",
+            "/api/v1/cart",
+            "/api/v1/order/**");
 
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
+
+        if (forbiddenPaths.stream().anyMatch(pattern -> pathMatcher.match(pattern, path))) {
+            exchange.getResponse().setStatusCode(HttpStatus.NOT_FOUND);
+            return exchange.getResponse().setComplete();
+        }
         System.out.println("GATEWAY DEBUG: Path = " + path);
         String targetTargetUri = gatewayProperties
                 .getRoutes()
@@ -54,7 +62,8 @@ public class GatewayFilter implements WebFilter {
                 .orElse(null);
 
         if (targetTargetUri == null) {
-            exchange.getResponse().setStatusCode(HttpStatus.NOT_FOUND);
+            System.out.println("GATEWAY DEBUG: targetTargetUri = null");
+            exchange.getResponse().setStatusCode(HttpStatus.BAD_REQUEST);
             return exchange.getResponse().setComplete();
         }
 
@@ -84,6 +93,7 @@ public class GatewayFilter implements WebFilter {
 
                 Claims claims = jwtUtil.extractAllClaims(token);
                 userId = String.valueOf(claims.get("userId"));
+                System.out.println("GATEWAY DEBUG: userId = " + userId);
                 role = String.valueOf(claims.get("role"));
             }
             if (isCookieNeeded) {
@@ -100,8 +110,8 @@ public class GatewayFilter implements WebFilter {
             }
         }
         String forwardUrl = targetTargetUri + path;
-        if (request.getURI().getQuery() != null) {
-            forwardUrl += "?" + request.getURI().getQuery();
+        if (request.getURI().getRawQuery() != null) {
+            forwardUrl += "?" + request.getURI().getRawQuery();
         }
 
         final String finalUserId = userId;
