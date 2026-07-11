@@ -1,5 +1,7 @@
 package ru.xromza.warehouse.service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -9,8 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.xromza.warehouse.dto.ItemDto;
+import ru.xromza.warehouse.dto.OrderItemEventDto;
 import ru.xromza.warehouse.dto.StockResponsePlainDto;
 import ru.xromza.warehouse.exceptions.BadRequestException;
+import ru.xromza.warehouse.exceptions.NotEnoughItems;
 import ru.xromza.warehouse.exceptions.NotFoundException;
 import ru.xromza.warehouse.mapper.StockResponsePlainMapper;
 import ru.xromza.warehouse.model.Stock;
@@ -19,9 +23,11 @@ import ru.xromza.warehouse.model.Warehouse;
 import ru.xromza.warehouse.repository.StockRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class StockService {
     private final StockRepository stockRepository;
     private final StockResponsePlainMapper stockResponsePlainMapper;
@@ -38,6 +44,38 @@ public class StockService {
 
     public List<StockResponsePlainDto> getAllByWarehouseId(Long warehouseId) {
         return stockResponsePlainMapper.toResponseList(stockRepository.findAllByWarehouseId(warehouseId));
+    }
+
+    @Transactional
+    public boolean reserveItems(Long warehouseId, List<OrderItemEventDto> items) throws NotEnoughItems {
+        List<Long> ids = items.stream()
+                .map(OrderItemEventDto::getVariantId)
+                .toList();
+        Map<Long, Stock> stocks = getStocksMapByVariantIdsAndWarehouseId(warehouseId, ids);
+        List<Stock> newStocks = new ArrayList<>();
+        boolean canCheckout = true;
+        Map<Long, String> errors = new HashMap<>();
+        log.info("Проверяю остатки склада {} для заказа", warehouseId);
+        for (OrderItemEventDto item : items) {
+            Long variantId = item.getVariantId();
+            Stock stock = stocks.get(variantId);
+            Stock newStock = stock.toBuilder().build();
+            if (item.getQuantity() > stock.getQuantity()) {
+                canCheckout = false;
+                errors.put(item.getVariantId(), "Недостаточно товара. Доступно: " + stock.getQuantity());
+            } else {
+                newStock.setQuantity(stock.getQuantity() - item.getQuantity());
+                newStocks.add(newStock);
+            }
+        }
+        if (!canCheckout) {
+            log.warn("Товара не хватает. Отменяем заказ");
+            throw new NotEnoughItems("NotEnoughItems", errors);
+        } else {
+            log.info("Товара достаточно. Сохраняю остатки");
+            stockRepository.saveAll(newStocks);
+        }
+        return true;
     }
 
     @Transactional(readOnly = true)

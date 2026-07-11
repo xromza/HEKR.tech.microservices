@@ -10,15 +10,19 @@ import ru.xromza.warehouse.model.Stock;
 import ru.xromza.warehouse.model.StockId;
 
 public interface StockRepository extends JpaRepository<Stock, StockId> {
-    
+
     @Query("SELECT s FROM Stock s LEFT JOIN FETCH s.warehouse WHERE s.id.variantId = :variantId")
     List<Stock> findAllByVariantIdWithWarehouse(@Param("variantId") Long variantId);
+
     @Query("SELECT s FROM Stock s WHERE s.id.variantId = :variantId")
     List<Stock> findAllByVariantId(@Param("variantId") Long variantId);
+
     @Query("SELECT s FROM Stock s WHERE s.id.warehouseId = :warehouseId")
     List<Stock> findAllByWarehouseId(@Param("warehouseId") Long warehouseId);
+
     @Query("SELECT s FROM Stock s WHERE s.id.warehouseId = :warehouseId AND s.id.variantId IN :variantIds")
-    List<Stock> findAllByWarehouseIdAndVariantIdsIn(@Param("warehouseId") Long warehouseId, @Param("variantIds") List<Long> variantIds);
+    List<Stock> findAllByWarehouseIdAndVariantIdsIn(@Param("warehouseId") Long warehouseId,
+            @Param("variantIds") List<Long> variantIds);
 
     @Query("SELECT s FROM Stock s WHERE s.id.variantId IN :variantIds")
     List<Stock> findAllByVariantIdsIn(@Param("variantIds") List<Long> variantIds);

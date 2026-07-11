@@ -2,7 +2,7 @@ package ru.xromza.warehouse.exceptions;
 
 import java.util.Map;
 
-public class NotEnoughItems extends RuntimeException {
+public class NotEnoughItems extends Exception {
     Map<Long, String> errors;
     public NotEnoughItems(String message, Map<Long, String> errors) {
         super(message);
