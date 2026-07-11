@@ -37,10 +37,9 @@ public class CartService {
     protected Cart addToCart(Long userId, CartItem newItem) {
         Cart cart = getCartByUserId(userId);
         if (!productVariantService.existsById(newItem.getVariantId())) {
-            throw new NotFoundException("Вариант товара с id:" + newItem.getVariantId() +" не найден");
+            throw new NotFoundException("Вариант товара с id:" + newItem.getVariantId() + " не найден");
         }
         List<CartItem> items = cart.getItems();
-        
 
         CartItem existingItem = items.stream()
                 .filter(item -> item.getVariantId().equals(newItem.getVariantId()))
@@ -75,7 +74,7 @@ public class CartService {
         Map<Long, ProductVariant> variants = productVariantService.getAllVariantsByIds(variantIds);
         List<Long> productIds = variants.entrySet().stream().map(entry -> entry.getValue().getProduct().getId())
                 .toList();
-        Map<Long, Product> products = productService.getProductsByVariantIds(productIds);
+        Map<Long, Product> products = productService.getProductsByIds(productIds);
         BigDecimal totalPrice = cartItems.stream().map(c -> {
             ProductVariant variant = variants.get(c.getVariantId());
             boolean isWholesale = c.getQuantity() >= variant.getProduct()

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import ru.xromza.catalog.dto.ProductCatalogResponseDto;
+import ru.xromza.catalog.dto.ProductMinimalDto;
 import ru.xromza.catalog.dto.ProductRequestDto;
 import ru.xromza.catalog.dto.ProductResponseDto;
 import ru.xromza.catalog.exceptions.NotFoundException;
@@ -35,11 +36,19 @@ public class ProductService {
         private final CategoryService categoryService;
 
         @Transactional(readOnly = true)
-        public Map<Long, Product> getProductsByVariantIds(List<Long> ids) {
+        public Map<Long, Product> getProductsByIds(List<Long> ids) {
                 List<Product> products = productRepository.findAllByIds(ids);
                 return products
                                 .stream()
                                 .collect(Collectors.toMap(product -> product.getId(), product -> product));
+        }
+
+        @Transactional(readOnly = true)
+        public Map<Long, ProductMinimalDto> getProductsMinimalByIds(List<Long> ids) {
+                List<ProductMinimalDto> products = productRepository.findAllMinimalByIds(ids);
+                return products
+                                .stream()
+                                .collect(Collectors.toMap(product -> product.id(), product -> product));
         }
 
         @Transactional(readOnly = true)
