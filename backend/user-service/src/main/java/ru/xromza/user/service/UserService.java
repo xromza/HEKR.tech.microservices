@@ -1,6 +1,8 @@
 package ru.xromza.user.service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -49,6 +51,14 @@ public class UserService implements UserProvider {
         return userRepository
                 .findByLogin(login)
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь с логином " + login + " не найден"));
+    }
+
+    public Map<Long, String> findLoginsByUserIds(List<Long> ids) {
+        List<User> users = userRepository.findAllByIdsIn(ids);
+
+        Map<Long, String> idLoginMap = users.stream()
+                .collect(Collectors.toMap(user -> user.getId(), user -> user.getLogin()));
+        return idLoginMap;
     }
 
     public boolean existsByLogin(String login) {
