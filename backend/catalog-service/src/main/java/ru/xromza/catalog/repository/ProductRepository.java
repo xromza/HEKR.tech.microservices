@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import ru.xromza.catalog.dto.ProductMinimalDto;
 import ru.xromza.catalog.model.Product;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
@@ -28,6 +29,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT DISTINCT p FROM Product p JOIN FETCH p.category LEFT JOIN FETCH p.variants v LEFT JOIN FETCH v.images WHERE p.id IN :ids")
     List<Product> findAllByIds(List<Long> ids);
+
+    @Query("SELECT p.id, p.priceRetail, p.priceWholesale, p.wholesaleThreshold FROM Product p WHERE p.id IN :ids")
+    List<ProductMinimalDto> findAllMinimalByIds(List<Long> ids);
 
     @Query("SELECT DISTINCT p FROM Product p LEFT JOIN p.variants WHERE p.isActive = true")
     Page<Product> findAllActiveWithVariants(Pageable pageable);
