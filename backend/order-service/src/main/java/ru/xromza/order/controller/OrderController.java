@@ -4,9 +4,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import ru.xromza.order.dto.OrderPreviewRequestDto;
 import ru.xromza.order.dto.OrderRequestDto;
 import ru.xromza.order.dto.OrderResponseDto;
 import ru.xromza.order.dto.OrderSubmittedDto;
+import ru.xromza.order.dto.PreOrderResponseDto;
 import ru.xromza.order.service.OrderService;
 import ru.xromza.order.utils.Status;
 
@@ -47,6 +49,11 @@ public class OrderController {
     public ResponseEntity<OrderResponseDto> getOrder(@PathVariable String orderId,
             @RequestHeader("X-User-Id") Long userId) {
         return ResponseEntity.ok(orderService.getOrder(orderId, userId));
+    }
+
+    @PostMapping("/preview")
+    public ResponseEntity<PreOrderResponseDto> getOrderPreview(@RequestBody OrderPreviewRequestDto dto) {
+        return ResponseEntity.ok(orderService.getOrderPreview(dto));
     }
 
 }

@@ -15,9 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
+import ru.xromza.order_worker.dto.ProductMinimalDto;
 import ru.xromza.order_worker.dto.OrderResponseDto;
 import ru.xromza.order_worker.dto.OrderStatusHistoryResponseDto;
-import ru.xromza.order_worker.dto.ProductMinimalDto;
 import ru.xromza.order_worker.event.OrderCreatedEvent;
 import ru.xromza.order_worker.event.OrderCreatedInternalEvent;
 import ru.xromza.order_worker.event.OrderSubmitEvent;

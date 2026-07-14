@@ -1,4 +1,4 @@
-package ru.xromza.warehouse.dto;
+package ru.xromza.order.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

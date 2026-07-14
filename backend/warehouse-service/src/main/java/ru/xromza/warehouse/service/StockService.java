@@ -12,10 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import ru.xromza.warehouse.dto.ItemDto;
 import ru.xromza.warehouse.dto.OrderItemEventDto;
+import ru.xromza.warehouse.dto.StockResponseDto;
 import ru.xromza.warehouse.dto.StockResponsePlainDto;
 import ru.xromza.warehouse.exceptions.BadRequestException;
 import ru.xromza.warehouse.exceptions.NotEnoughItems;
 import ru.xromza.warehouse.exceptions.NotFoundException;
+import ru.xromza.warehouse.mapper.StockResponseMapper;
 import ru.xromza.warehouse.mapper.StockResponsePlainMapper;
 import ru.xromza.warehouse.model.Stock;
 import ru.xromza.warehouse.model.StockId;
@@ -32,6 +34,7 @@ public class StockService {
     private final StockRepository stockRepository;
     private final StockResponsePlainMapper stockResponsePlainMapper;
     private final WarehouseService warehouseService;
+    private final StockResponseMapper stockResponseMapper;
 
     public List<Stock> getByVariantId(Long variantId) {
         return stockRepository.findAllByVariantId(variantId);
@@ -143,5 +146,11 @@ public class StockService {
                 .id(stockId)
                 .warehouse(warehouse)
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<StockResponseDto> getFullStocksByVariantIds(List<Long> variantIds) {
+        List<Stock> stocks = stockRepository.findAllByVariantIdsInWithWarehouse(variantIds);
+        return stockResponseMapper.toResponseList(stocks);
     }
 }

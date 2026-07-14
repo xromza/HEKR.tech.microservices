@@ -3,6 +3,7 @@ package ru.xromza.order.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.xromza.order.interfaces.ProductInfoInterface;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -41,7 +42,7 @@ import java.math.BigDecimal;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class OrderItemResponseDto {
+public class OrderItemResponseDto implements ProductInfoInterface {
     @Schema(description = "Уникальный идентификатор товара")
     private Long productId;
     
@@ -64,7 +65,7 @@ public class OrderItemResponseDto {
     private String mainImageUrl;
     
     @Schema(description = "Количество товара в заказе", example = "2")
-    private Long quantity;
+    private Integer quantity;
     
     @Schema(description = "Цена за единицу товара с применёнными скидками", example = "599.99")
     private BigDecimal appliedPrice;

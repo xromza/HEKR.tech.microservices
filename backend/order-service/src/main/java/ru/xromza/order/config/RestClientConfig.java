@@ -35,4 +35,11 @@ public class RestClientConfig {
                 })
                 .build();
     }
+
+    @Bean
+    public RestClient warehouseRestClient(@Value("${services.warehouse.url}") String warehouseUrl) {
+        return RestClient.builder()
+                .baseUrl(warehouseUrl)
+                .build();
+    }
 }

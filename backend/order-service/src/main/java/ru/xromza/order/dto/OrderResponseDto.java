@@ -1,5 +1,6 @@
 package ru.xromza.order.dto;
 
+import ru.xromza.order.interfaces.ProductItemsInterface;
 import ru.xromza.order.utils.PaymentMethod;
 import ru.xromza.order.utils.Status;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -53,7 +54,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
-public class OrderResponseDto {
+public class OrderResponseDto implements ProductItemsInterface<OrderItemResponseDto> {
     @Schema(description = "Идентификатор заказа", example = "111")
     private String id;
     @Schema(description = "Идентификатор пользователя", example = "1")

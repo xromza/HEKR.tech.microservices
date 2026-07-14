@@ -1,8 +1,11 @@
 package ru.xromza.order.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.core.ParameterizedTypeReference;
@@ -14,13 +17,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import ru.xromza.order.dto.OrderItemResponseDto;
+import ru.xromza.order.dto.ItemWarehouseAvailabilityResponseDto;
+import ru.xromza.order.dto.OrderItemRequestDto;
+import ru.xromza.order.dto.OrderPreviewRequestDto;
 import ru.xromza.order.dto.OrderRequestDto;
 import ru.xromza.order.dto.OrderResponseDto;
 import ru.xromza.order.dto.OrderStatusHistoryResponseDto;
+import ru.xromza.order.dto.PreOrderItemResponseDto;
+import ru.xromza.order.dto.PreOrderPriceResponseDto;
+import ru.xromza.order.dto.PreOrderResponseDto;
+import ru.xromza.order.dto.PreOrderWarehouseResponseDto;
+import ru.xromza.order.dto.ProductMinimalDto;
 import ru.xromza.order.dto.ProductVariantOrderDto;
+import ru.xromza.order.dto.StockResponseDto;
 import ru.xromza.order.event.OrderSubmitEvent;
 import ru.xromza.order.exceptions.ForbiddenException;
+import ru.xromza.order.interfaces.ProductInfoInterface;
+import ru.xromza.order.interfaces.ProductItemsInterface;
 import ru.xromza.order.mapper.OrderItemMapper;
 
 @Service
@@ -33,6 +46,7 @@ public class OrderService {
     private final RestClient orderWorkerRestClient;
     private final RestClient catalogRestClient;
     private final RestClient userRestClient;
+    private final RestClient warehouseRestClient;
 
     public String createOrder(OrderRequestDto dto, Long userId) {
         String uuid = UUID.randomUUID().toString();
@@ -70,7 +84,9 @@ public class OrderService {
         return orders.getFirst();
     }
 
-    private List<OrderResponseDto> fillProductFields(List<OrderResponseDto> initialOrders) {
+    private <T extends ProductItemsInterface<I>, I extends ProductInfoInterface> List<T> fillProductFields(
+            List<T> initialOrders) {
+
         List<Long> variantIds = initialOrders.stream().flatMap(item -> item.getItems().stream())
                 .map(item -> item.getVariantId()).distinct().toList();
         Map<Long, ProductVariantOrderDto> orderItemsData = catalogRestClient
@@ -81,8 +97,8 @@ public class OrderService {
                 .retrieve()
                 .body(new ParameterizedTypeReference<Map<Long, ProductVariantOrderDto>>() {
                 });
-        for (OrderResponseDto order : initialOrders) {
-            List<OrderItemResponseDto> items = order.getItems();
+        for (T order : initialOrders) {
+            List<I> items = order.getItems();
             order.setItems(items.stream().map(item -> {
                 ProductVariantOrderDto orderData = orderItemsData.get(item.getVariantId());
                 item.setBrand(orderData.getBrand());
@@ -133,6 +149,105 @@ public class OrderService {
         fillProductFields(orders);
         fillChangedByNameInStatusHistory(orders);
         return orders;
+    }
+
+    public PreOrderResponseDto getOrderPreview(OrderPreviewRequestDto dto) {
+        List<Long> variantIds = dto.getItems().stream().map(OrderItemRequestDto::getVariantId).toList();
+        log.info("Отправляю запрос на получение остатков");
+        List<StockResponseDto> stocks = warehouseRestClient.get()
+                .uri(uriBuilder -> uriBuilder.queryParam("variantIds", variantIds)
+                        .path("/api/v1/internal/stock")
+                        .build())
+                .retrieve()
+                .body(new ParameterizedTypeReference<List<StockResponseDto>>() {
+                });
+        log.info("Запросил цены товаров у каталога: {}", variantIds.toString());
+        Map<Long, ProductMinimalDto> minimalDtos = catalogRestClient.get().uri(
+                uriBuilder -> uriBuilder.path("/api/v1/catalog/products/prices")
+                        .queryParam("variantIds", variantIds).build())
+                .retrieve()
+                .body(new ParameterizedTypeReference<Map<Long, ProductMinimalDto>>() {
+                });
+        log.info("Получил цены товаров у каталога: {}", variantIds.toString());
+        BigDecimal totalPrice = BigDecimal.ZERO;
+        PreOrderResponseDto totalResponse = PreOrderResponseDto.builder().build();
+        Map<Long, Integer> requestedQuantities = dto.getItems().stream()
+                .collect(Collectors.toMap(
+                        OrderItemRequestDto::getVariantId,
+                        OrderItemRequestDto::getQuantity));
+
+        Map<Long, List<StockResponseDto>> stocksByWarehouse = stocks.stream()
+                .collect(Collectors.groupingBy(StockResponseDto::getWarehouseId));
+
+        List<PreOrderWarehouseResponseDto> warehouses = stocksByWarehouse.entrySet().stream()
+                .map(entry -> {
+                    Long warehouseId = entry.getKey();
+                    List<StockResponseDto> warehouseStocks = entry.getValue();
+
+                    boolean isAvailableForOrder = requestedQuantities.entrySet().stream()
+                            .allMatch(request -> {
+                                Optional<StockResponseDto> stockOpt = warehouseStocks.stream()
+                                        .filter(s -> s.getVariantId().equals(request.getKey()))
+                                        .findFirst();
+
+                                return stockOpt.isPresent() && stockOpt.get().getQuantity() >= request.getValue();
+                            });
+
+                    String address = warehouseStocks.isEmpty() ? "" : warehouseStocks.get(0).getAddress();
+
+                    return PreOrderWarehouseResponseDto.builder()
+                            .id(warehouseId)
+                            .address(address)
+                            .isAvailableForOrder(isAvailableForOrder)
+                            .build();
+                })
+                .toList();
+        for (OrderItemRequestDto item : dto.getItems()) {
+            ProductMinimalDto productMinimalDto = minimalDtos.get(item.getVariantId());
+            boolean isWholesale = item.getQuantity() >= productMinimalDto.wholesaleThreshold();
+            BigDecimal appliedPrice = isWholesale
+                    ? productMinimalDto.priceWholesale()
+                    : productMinimalDto.priceRetail();
+            BigDecimal subtotal = appliedPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
+            totalPrice = totalPrice.add(subtotal);
+            String priceType = isWholesale ? "WHOLESALE" : "RETAIL";
+            PreOrderPriceResponseDto price = PreOrderPriceResponseDto.builder()
+                    .base(productMinimalDto.priceRetail())
+                    .applied(appliedPrice)
+                    .type(priceType)
+                    .build();
+
+            List<StockResponseDto> variantStocks = stocks.stream()
+                    .filter(stock -> stock.getVariantId() == item.getVariantId()).toList();
+
+            int maxAvailable = variantStocks.stream()
+                    .mapToInt(StockResponseDto::getQuantity)
+                    .max()
+                    .orElse(0);
+            List<ItemWarehouseAvailabilityResponseDto> availableAtWarehouses = variantStocks.stream()
+                    .map(stock -> ItemWarehouseAvailabilityResponseDto.builder()
+                            .warehouseId(stock.getWarehouseId())
+                            .availableQuantity(stock.getQuantity())
+                            .build())
+                    .toList();
+            boolean isAvailable = variantStocks.stream()
+                    .filter(stock -> stock.getWarehouseId() == dto.getWarehouseId())
+                    .anyMatch(stock -> stock.getQuantity() >= item.getQuantity());
+            PreOrderItemResponseDto itemResponse = PreOrderItemResponseDto.builder()
+                    .variantId(item.getVariantId())
+                    .price(price)
+                    .maxAvailableQuantity(maxAvailable)
+                    .availableAtWarehouses(availableAtWarehouses)
+                    .quantity(item.getQuantity())
+                    .subtotal(subtotal)
+                    .isAvailable(isAvailable)
+                    .build();
+            totalResponse.addItem(itemResponse);
+        }
+        totalResponse.setTotalPrice(totalPrice);
+        totalResponse.setWarehouses(warehouses);
+        fillProductFields(List.of(totalResponse));
+        return totalResponse;
     }
 
     @Getter

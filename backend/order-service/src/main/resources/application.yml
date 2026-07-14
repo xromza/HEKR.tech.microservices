@@ -23,6 +23,8 @@ services:
         url: http://localhost:8085
     user:
         url: http://localhost:8083
+    warehouse:
+        url: http://localhost:8084
 
 management:
     endpoints:

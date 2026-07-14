@@ -5,24 +5,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
 import ru.xromza.warehouse.dto.StockResponseDto;
-import ru.xromza.warehouse.mapper.StockResponseMapper;
 import ru.xromza.warehouse.service.StockService;
 
 import java.util.List;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
-@RequestMapping("/api/v1/stock")
+@RequestMapping("/api/v1/internal/stock")
 @RequiredArgsConstructor
-public class StockController {
+public class InternalController {
     private final StockService stockService;
-    private final StockResponseMapper stockResponseMapper;
-    
-    @GetMapping("/{variantId}")
-    public List<StockResponseDto> getVariantStock(@PathVariable Long variantId) {
-        return stockResponseMapper.toResponseList(stockService.getByVariantId(variantId));
+    @GetMapping
+    public List<StockResponseDto> getFullStocks(@RequestParam   List<Long> variantIds) {
+        return stockService.getFullStocksByVariantIds(variantIds);
     }
     
 }
