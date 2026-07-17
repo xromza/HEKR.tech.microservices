@@ -1,7 +1,10 @@
 package ru.xromza.gateway.utils;
 
 import java.net.URI;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
@@ -14,17 +17,34 @@ import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 
+import io.github.bucket4j.Bandwidth;
+import io.github.bucket4j.BucketConfiguration;
+import io.github.bucket4j.distributed.proxy.AsyncProxyManager;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 import ru.xromza.gateway.config.GatewayProperties;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class GatewayFilter implements WebFilter {
     private final GatewayProperties gatewayProperties;
     private final WebClient webClient;
     private final JwtUtil jwtUtil;
+    private final AsyncProxyManager<byte[]> asyncProxyManager;
+
+    private BucketConfiguration getBucketConfiguration() {
+        return BucketConfiguration
+                .builder()
+                .addLimit(Bandwidth.builder()
+                        .capacity(30)
+                        .refillIntervallyAligned(30, Duration.ofMinutes(1), Instant.now())
+                        .build())
+                .build();
+    }
+
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     private final List<String> forbiddenPaths = List.of(
@@ -52,6 +72,31 @@ public class GatewayFilter implements WebFilter {
             exchange.getResponse().setStatusCode(HttpStatus.NOT_FOUND);
             return exchange.getResponse().setComplete();
         }
+        log.info("PATH = {}", path);
+
+        String clientKeyString = resolveClientKey(request);
+        byte[] redisKeyBytes = clientKeyString.getBytes();
+
+        var bucket = asyncProxyManager.builder().build(redisKeyBytes,
+                () -> CompletableFuture.<BucketConfiguration>completedFuture(getBucketConfiguration()));
+        return Mono.fromFuture(bucket.tryConsume(1))
+                .flatMap(isAllowed -> {
+                    if (!isAllowed) {
+                        System.out.println("GATEWAY DEBUG: Rate limit exceeded for key: " + clientKeyString);
+                        exchange.getResponse().setStatusCode(HttpStatus.TOO_MANY_REQUESTS);
+                        exchange.getResponse().getHeaders().add(HttpHeaders.CONTENT_TYPE, "application/json");
+
+                        byte[] responseBytes = "{\"error\": \"Too many requests. Please try again later.\"}".getBytes();
+                        var buffer = exchange.getResponse().bufferFactory().wrap(responseBytes);
+                        return exchange.getResponse().writeWith(Mono.just(buffer));
+                    }
+                    return gatewayProceed(exchange, chain, request, path);
+                });
+    }
+
+    private Mono<Void> gatewayProceed(ServerWebExchange exchange, WebFilterChain chain, ServerHttpRequest request,
+            String path) {
+
         System.out.println("GATEWAY DEBUG: Path = " + path);
         String targetTargetUri = gatewayProperties
                 .getRoutes()
@@ -134,5 +179,30 @@ public class GatewayFilter implements WebFilter {
                     return exchange.getResponse().writeWith(
                             clientResponse.bodyToFlux(org.springframework.core.io.buffer.DataBuffer.class));
                 });
+    }
+
+    private String resolveClientKey(ServerHttpRequest request) {
+        String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            try {
+                String token = authHeader.substring(7);
+                if (!jwtUtil.isTokenInvalid(token)) {
+                    Claims claims = jwtUtil.extractAllClaims(token);
+                    String userId = String.valueOf(claims.get("userId"));
+                    if (userId != null && !userId.isEmpty() && !userId.equals("null")) {
+                        return "user:" + userId;
+                    }
+                }
+            } catch (Exception e) {
+            }
+        }
+
+        String ip = request.getHeaders().getFirst("X-Forwarded-For");
+        if (ip == null || ip.isEmpty()) {
+            ip = request.getRemoteAddress() != null
+                    ? request.getRemoteAddress().getAddress().getHostAddress()
+                    : "anonymous";
+        }
+        return "ip:" + ip;
     }
 }
