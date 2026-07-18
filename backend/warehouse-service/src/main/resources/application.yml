@@ -1,14 +1,14 @@
 server:
-    port: 8084
+    port: 8080
 
 spring:
     application:
         name: warehouse-service
     
     datasource:
-        url: jdbc:postgresql://localhost:5432/hekr_store_db?currentSchema=warehouse-schema
-        username: hekr_admin
-        password: hekr_password
+        url: ${DB_URL}?currentSchema=warehouse-schema
+        username: ${DB_USER}
+        password: ${DB_PASS}
         driver-class-name: org.postgresql.Driver
 
     jpa:
@@ -26,10 +26,10 @@ spring:
         locations: classpath:db/migration
     
     rabbitmq:
-        host: localhost
-        port: 5672
-        username: guest
-        password: guest
+        host: ${RABBITMQ_HOST}
+        port: ${RABBITMQ_PORT}
+        username: ${RABBITMQ_USER}
+        password: ${RABBITMQ_PASS}
         listener: 
             simple: 
                 retry:
@@ -37,8 +37,8 @@ spring:
                     max-retries: 3
     data:
         redis:
-            host: localhost
-            port: 6379
+            host: ${REDIS_HOST}
+            port: ${REDIS_PORT}
 management:
     endpoints:
         web:

@@ -1,20 +1,20 @@
 server:
-    port: 8085
+    port: 8080
 
 services:
     catalog:
-        url: http://localhost:8081
+        url: http://catalog-service:8080
     user:
-        url: http://localhost:8083
+        url: http://user-service:8080
 
 spring:
     application:
         name: order-service-worker
     
     datasource:
-        url: jdbc:postgresql://localhost:5432/hekr_store_db?currentSchema=order-schema
-        username: hekr_admin
-        password: hekr_password
+        url: ${DB_URL}?currentSchema=order-schema
+        username: ${DB_USER}
+        password: ${DB_PASS}
         driver-class-name: org.postgresql.Driver
 
     jpa:
@@ -32,10 +32,10 @@ spring:
         locations: classpath:db/migration
     
     rabbitmq:
-        host: localhost
-        port: 5672
-        username: guest
-        password: guest
+        host: ${RABBITMQ_HOST}
+        port: ${RABBITMQ_PORT}
+        username: ${RABBITMQ_USER}
+        password: ${RABBITMQ_PASS}
         listener: 
             simple:
                 prefetch: 10

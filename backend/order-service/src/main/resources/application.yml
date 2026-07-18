@@ -1,15 +1,15 @@
 server:
-    port: 8082
+    port: 8080
 
 spring:
     application:
         name: order-service
     
     rabbitmq:
-        host: localhost
-        port: 5672
-        username: guest
-        password: guest
+        host: ${RABBITMQ_HOST}
+        port: ${RABBITMQ_PORT}
+        username: ${RABBITMQ_USER}
+        password: ${RABBITMQ_PASS}
         listener: 
             simple: 
                 retry:
@@ -18,13 +18,13 @@ spring:
 
 services:
     catalog:
-        url: http://localhost:8081
+        url: http://catalog-service:8080
     order-worker:
-        url: http://localhost:8085
+        url: http://order-service-worker:8080
     user:
-        url: http://localhost:8083
+        url: http://user-service:8080
     warehouse:
-        url: http://localhost:8084
+        url: http://warehouse-service:8080
 
 management:
     endpoints:

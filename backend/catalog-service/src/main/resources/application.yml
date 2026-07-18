@@ -1,16 +1,18 @@
 server:
-    port: 8081
+    port: 8080
 
 spring:
     application:
         name: catalog-service
-    
     datasource:
-        url: jdbc:postgresql://localhost:5432/hekr_store_db?currentSchema=catalog-schema
-        username: hekr_admin
-        password: hekr_password
+        url: ${DB_URL}?currentSchema=catalog-schema
+        username: ${DB_USER}
+        password: ${DB_PASS}
         driver-class-name: org.postgresql.Driver
-
+    data:
+        redis:
+            host: ${REDIS_HOST}
+            port: ${REDIS_PORT}
     jpa:
         hibernate:
             ddl-auto: validate
@@ -26,10 +28,10 @@ spring:
         locations: classpath:db/migration
     
     rabbitmq:
-        host: localhost
-        port: 5672
-        username: guest
-        password: guest
+        host: ${RABBITMQ_HOST}
+        port: ${RABBITMQ_PORT}
+        username: ${RABBITMQ_USER}
+        password: ${RABBITMQ_PASS}
         listener: 
             simple: 
                 retry:

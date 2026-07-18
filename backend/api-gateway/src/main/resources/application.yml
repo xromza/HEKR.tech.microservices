@@ -4,30 +4,30 @@ server:
 gateway:
     routes:
         - path: "/api/v1/catalog/**"
-          uri: "http://localhost:8081"
+          uri: "http://catalog-service:8080"
         - path: "/api/v1/cart/**"
-          uri: "http://localhost:8081"
+          uri: "http://catalog-service:8080"
         - path: "/api/v1/order/**"
           uri: "http://localhost:8082"
         - path: "/api/v1/user/**"
-          uri: "http://localhost:8083"
+          uri: "http://user-service:8080"
         - path: "/api/v1/warehouse/**"
-          uri: "http://localhost:8084"
+          uri: "http://warehouse-service:8080"
         - path: "/api/v1/stock/**"
           uri: "http://localhost:8084"
 
 jwt:
-    secret: "MzIzYjNjYTU1MjE1NWRmM2ZhMTZjOWRhZjIzODM1OTg3ZjRlZDQ1NTNlZjQ0MWFiYTZlYWY2YTlmZWUzNTFlYw=="
-    expiration: 3600000
+    secret: "${JWT_SECRET}"
+    expiration: "${JWT_EXPIRATION:3600000}"
     refresh-token:
-        expiration: 604800000
+        expiration:  "${JWT_REFRESH_TOKEN_EXPIRATION:604800000}"
 spring:
     application:
         name: api-gateway
     data:
       redis:
-        host: localhost
-        port: 6379
+        host: ${REDIS_HOST}
+        port: ${REDIS_PORT}
     
 management:
     endpoints:
