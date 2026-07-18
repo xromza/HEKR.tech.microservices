@@ -121,7 +121,6 @@ public class GlobalExceptionHandler {
                                                 .build());
         }
 
-
         @ExceptionHandler(AuthException.class)
         public ResponseEntity<ErrorResponseDto> handleAuth(AuthException ex) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponseDto
@@ -178,6 +177,16 @@ public class GlobalExceptionHandler {
                                 .status(HttpStatus.BAD_REQUEST)
                                 .body(ErrorResponseDto.builder()
                                                 .error("BadRequest")
+                                                .description(ex.getMessage())
+                                                .build());
+        }
+
+        @ExceptionHandler(NewPasswordMatchesOldException.class)
+        public ResponseEntity<ErrorResponseDto> handleNewPasswordMatchesOld(NewPasswordMatchesOldException ex) {
+                return ResponseEntity
+                                .status(HttpStatus.BAD_REQUEST)
+                                .body(ErrorResponseDto.builder()
+                                                .error("PasswordMatchesOld")
                                                 .description(ex.getMessage())
                                                 .build());
         }

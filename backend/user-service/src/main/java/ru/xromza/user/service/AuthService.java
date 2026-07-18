@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import ru.xromza.user.dto.IndividualDetailsRequestDto;
 import ru.xromza.user.dto.LegalDetailsRequestDto;
 import ru.xromza.user.dto.StatusDto;
 import ru.xromza.user.exceptions.AuthException;
+import ru.xromza.user.exceptions.NewPasswordMatchesOldException;
 import ru.xromza.user.interfaces.DetailsRequestInterface;
 import ru.xromza.user.mapper.IndividualDetailsRequestMapper;
 import ru.xromza.user.mapper.LegalDetailsRequestMapper;
@@ -27,9 +29,11 @@ import ru.xromza.user.utils.ClientType;
 import ru.xromza.user.utils.UserRole;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
     private final UserService userService;
     private final RefreshTokenService refreshTokenService;
@@ -40,7 +44,6 @@ public class AuthService {
 
     @Value("${jwt.refresh-token.expiration}")
     private long refreshExpiration;
-
 
     @Transactional
     public AuthResult register(UserRegistrationDto request) {
@@ -132,11 +135,20 @@ public class AuthService {
                 .description("Токен отозван")
                 .build();
     }
+
     @Transactional
-    protected User changePassword(User user, String password) {
+    public StatusDto changePassword(UserDetails userDetails, String password) {
+        User user = userService.getApprovedUserByLogin(userDetails.getUsername());
+        if (passwordEncoder.matches(password, user.getPasswordHash())) {
+            throw new NewPasswordMatchesOldException("Новый пароль не должен совпадать со старым");
+        }
         user.setPasswordHash(passwordEncoder.encode(password));
         refreshTokenService.deleteTokenByUserId(user.getId());
-        return userService.update(user);
+        userService.update(user);
+        return StatusDto.builder()
+                .description("Пароль обновлён")
+                .status("Успешно")
+                .build();
     }
 
 }

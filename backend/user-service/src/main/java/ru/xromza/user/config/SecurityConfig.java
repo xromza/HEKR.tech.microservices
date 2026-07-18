@@ -65,6 +65,8 @@ public class SecurityConfig {
                                                 .hasAnyAuthority("ROLE_ADMIN", "ROLE_CLIENT", "ROLE_MANAGER")
                                                 .requestMatchers("/api/v1/user/profile/*")
                                                 .hasAnyAuthority("ROLE_ADMIN", "ROLE_CLIENT", "ROLE_MANAGER")
+                                                .requestMatchers(HttpMethod.POST, "/api/v1/user/profile/password")
+                                                .hasAnyAuthority("ROLE_ADMIN", "ROLE_CLIENT", "ROLE_MANAGER")
                                                 .requestMatchers(HttpMethod.PATCH, "/api/v1/user/profile")
                                                 .hasAnyAuthority("ROLE_ADMIN", "ROLE_CLIENT", "ROLE_MANAGER")
                                                 .anyRequest().authenticated())
