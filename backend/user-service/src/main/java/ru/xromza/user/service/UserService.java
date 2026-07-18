@@ -27,6 +27,7 @@ public class UserService implements UserProvider {
     private final UserMapper userMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public User getApprovedUserByLogin(String login) {
         User user = userRepository
                 .findByLogin(login)
