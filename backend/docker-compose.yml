@@ -6,8 +6,8 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_LOGIN}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
     networks:
       - hekr-network
     
@@ -17,9 +17,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: hekr_store_db
-      POSTGRES_USER: hekr_admin
-      POSTGRES_PASSWORD: hekr_password
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
     volumes:
       - hekr-db-data:/var/lib/postgresql/data
     networks:
@@ -36,6 +36,128 @@ services:
     networks:
       - hekr-network
 
+  api-gateway:
+    build:
+      context: .
+      dockerfile: ./api-gateway/Dockerfile
+    image: hekr-api-gateway:1.0
+    container_name: hekr-api-gateway
+    depends_on:
+      - redis
+    ports:
+      - "8080:8080"
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
+      - JWT_REFRESH_TOKEN_EXPIRATION=${JWT_REFRESH_TOKEN_EXPIRATION}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+
+    networks:
+      - hekr-network
+
+  catalog-service:
+    build:
+      context: .
+      dockerfile: ./catalog-service/Dockerfile
+    image: hekr-catalog-service:1.0
+    container_name: hekr-catalog-service
+    depends_on:
+      - redis
+      - postgres
+      - rabbitmq
+    environment:
+      - RABBITMQ_USER=${RABBITMQ_LOGIN}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
+      - DB_USER=${DB_USER}
+      - DB_URL=${DB_URL}
+      - DB_PASS=${DB_PASS}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+    networks:
+      - hekr-network
+
+  warehouse-service:
+    build:
+      context: .
+      dockerfile: ./warehouse-service/Dockerfile
+    image: hekr-warehouse-service:1.0
+    container_name: hekr-warehouse-service
+    depends_on:
+      - redis
+      - postgres
+      - rabbitmq
+    environment:
+      - RABBITMQ_USER=${RABBITMQ_LOGIN}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
+      - DB_USER=${DB_USER}
+      - DB_URL=${DB_URL}
+      - DB_PASS=${DB_PASS}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+    networks:
+      - hekr-network
+  user-service:
+    build:
+      context: .
+      dockerfile: ./user-service/Dockerfile
+    image: hekr-user-service:1.0
+    container_name: hekr-user-service
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_URL=${DB_URL}
+      - DB_PASS=${DB_PASS}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
+      - JWT_REFRESH_TOKEN_EXPIRATION=${JWT_REFRESH_TOKEN_EXPIRATION}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+    networks:
+      - hekr-network
+
+  order-service-worker:
+    build:
+      context: .
+      dockerfile: ./order-service-worker/Dockerfile
+    image: hekr-order-service-worker:1.0
+    container_name: hekr-order-service-worker
+    depends_on:
+      - postgres
+      - rabbitmq
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_URL=${DB_URL}
+      - DB_PASS=${DB_PASS}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_USER=${RABBITMQ_LOGIN}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
+    networks:
+      - hekr-network
+  order-service:
+    build:
+      context: .
+      dockerfile: ./order-service/Dockerfile
+    image: hekr-order-service:1.0
+    container_name: hekr-order-service
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - RABBITMQ_USER=${RABBITMQ_LOGIN}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
+    networks:
+      - hekr-network
+
+      
 volumes:
   hekr-db-data:
   hekr-redis-data:
