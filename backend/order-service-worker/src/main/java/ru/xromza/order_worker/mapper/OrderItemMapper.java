@@ -25,6 +25,7 @@ public interface OrderItemMapper {
     @Mapping(target = "quantity", source = "quantity")
     @Mapping(target = "priceAtPurchase", ignore = true)
     @Mapping(target = "totalPrice", ignore = true)
+    @Mapping(target = "priceType", ignore = true)
     OrderItem toOrder(OrderItemEventModel eventModel);
 
     List<OrderItemEventModel> toEventItemsList(List<OrderItemEventDto> dtos);
@@ -35,6 +36,13 @@ public interface OrderItemMapper {
     @Mapping(target = "quantity", source = "quantity")
     @Mapping(target = "appliedPrice", source = "priceAtPurchase")
     @Mapping(target = "subtotal", ignore = true)
+    @Mapping(target = "productId", ignore = true)
+    @Mapping(target = "brand", ignore = true)
+    @Mapping(target = "title", ignore = true)
+    @Mapping(target = "sku", ignore = true)
+    @Mapping(target = "size", ignore = true)
+    @Mapping(target = "color", ignore = true)
+    @Mapping(target = "mainImageUrl", ignore = true)
     OrderItemResponseDto toResponse(OrderItem item);
 
     @AfterMapping
