@@ -29,7 +29,6 @@ public class RabbitMQConfig {
         DefaultClassMapper classMapper = new DefaultClassMapper();
         classMapper.setTrustedPackages("ru.xromza.*");
 
-        // ключевая строка: маппим чужой TypeId на свой локальный класс
         classMapper.setIdClassMapping(Map.of(
                 "ru.xromza.order.event.OrderSubmitEvent", OrderSubmitEvent.class,
                 "ru.xromza.warehouse.event.InventoryResultEvent", InventoryResultEvent.class));
@@ -60,10 +59,15 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding bindingOrders(Queue ordersQueue) {
+    public TopicExchange orderSubmissionExchange() {
+        return new TopicExchange("order.submission.exchange");
+    }
+
+    @Bean
+    public Binding bindingOrders(TopicExchange orderSubmissionExchange, Queue ordersQueue) {
         return BindingBuilder
                 .bind(ordersQueue)
-                .to(new TopicExchange("order.submission.exchange"))
+                .to(orderSubmissionExchange)
                 .with("order.submitted");
     }
 
@@ -77,14 +81,6 @@ public class RabbitMQConfig {
         return BindingBuilder
                 .bind(warehouseResponsesQueue)
                 .to(warehouseEventsExchange)
-                .with("inventory.reserved");
-    }
-
-    @Bean
-    public Binding bindingWarehouseNotEnough(TopicExchange warehouseEventsExchange, Queue warehouseResponsesQueue) {
-        return BindingBuilder
-                .bind(warehouseResponsesQueue)
-                .to(warehouseEventsExchange)
-                .with("inventory.not_enough_items");
+                .with("inventory.*");
     }
 }
