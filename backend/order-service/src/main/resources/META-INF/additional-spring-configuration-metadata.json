@@ -1,0 +1,24 @@
+{
+  "properties": [
+    {
+      "name": "services.catalog.url",
+      "type": "java.lang.String",
+      "description": "Catalog microservice URL"
+    },
+    {
+      "name": "services.order-worker.url",
+      "type": "java.lang.String",
+      "description": "Order Worker microservice URL"
+    },
+    {
+      "name": "services.user.url",
+      "type": "java.lang.String",
+      "description": "User microservice URL"
+    },
+    {
+      "name": "services.warehouse.url",
+      "type": "java.lang.String",
+      "description": "Warehouse microservice URL"
+    }
+  ]
+}

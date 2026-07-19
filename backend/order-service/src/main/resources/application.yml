@@ -16,6 +16,75 @@ spring:
                     enabled: true
                     max-retries: 3
 
+resilience4j:
+    circuitbreaker:
+        instances:
+            orderWorkerService:
+                sliding-window-size: 10
+                failure-rate-threshold: 50
+                wait-duration-in-open-state: 30s
+                permitted-number-of-calls-in-half-open-state: 3
+                record-exceptions:
+                    - org.springframework.web.client.ResourceAccessException 
+                    - java.net.ConnectException                             
+                    - java.net.SocketTimeoutException 
+            catalogService:
+                sliding-window-size: 10
+                failure-rate-threshold: 50
+                wait-duration-in-open-state: 60s
+                permitted-number-of-calls-in-half-open-state: 5
+                record-exceptions:
+                    - org.springframework.web.client.ResourceAccessException
+                    - java.net.ConnectException 
+                    - java.net.SocketTimeoutException 
+            userService:
+                slidingWindowSize: 10
+                failureRateThreshold: 50
+                waitDurationInOpenState: 60s
+                record-exceptions:
+                    - org.springframework.web.client.ResourceAccessException
+                    - java.net.ConnectException 
+                    - java.net.SocketTimeoutException 
+                
+            warehouseService:
+                slidingWindowSize: 10
+                failureRateThreshold: 50
+                waitDurationInOpenState: 30s
+                record-exceptions:
+                    - org.springframework.web.client.ResourceAccessException
+                    - java.net.ConnectException 
+                    - java.net.SocketTimeoutException 
+            rabbitMqService:
+                failureRateThreshold: 50
+                waitDurationInOpenState: 10s
+                slidingWindowSize: 10
+    retry:
+        instances:
+            rabbitMqService:
+                maxAttempts: 3
+                waitDuration: 1s
+            orderWorkerService:
+                maxAttempts: 2
+                waitDuration: 1s
+                exponential-backoff-multiplier: 2
+                ignore-exceptions:
+                    - ru.xromza.order.exceptions.ForbiddenException
+            
+            catalogService:
+                maxAttempts: 2
+                waitDuration: 500ms
+                exponential-backoff-multiplier: 2
+            
+            userService:
+                maxAttempts: 2
+                waitDuration: 500ms
+                exponential-backoff-multiplier: 2
+            
+            warehouseService:
+                maxAttempts: 2
+                waitDuration: 500ms
+                exponential-backoff-multiplier: 2
+                
 services:
     catalog:
         url: http://catalog-service:8080
