@@ -63,4 +63,5 @@ public class RabbitMQConfig {
                 .to(warehouseEventExchange)
                 .with("order.created");
     }
+
 }

@@ -34,6 +34,7 @@ public class OrderCreatedListener {
                         .build();
                 log.info("Успешно зарезервировал заказ: {}", event.getOrderId());
                 rabbitTemplate.convertAndSend("warehouse.events.exchange", "inventory.reserved", successEvent);
+                log.info("Отрправил inventory.reserved для заказа: {}", event.getOrderId());
             }
         } catch (NotEnoughItems ex) {
             InventoryResultEvent lowStockEvent = InventoryResultEvent.builder()
