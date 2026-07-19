@@ -8,13 +8,13 @@ gateway:
         - path: "/api/v1/cart/**"
           uri: "http://catalog-service:8080"
         - path: "/api/v1/order/**"
-          uri: "http://localhost:8082"
+          uri: "http://order-service:8080"
         - path: "/api/v1/user/**"
           uri: "http://user-service:8080"
         - path: "/api/v1/warehouse/**"
           uri: "http://warehouse-service:8080"
         - path: "/api/v1/stock/**"
-          uri: "http://localhost:8084"
+          uri: "http://warehouse-service:8080"
 
 jwt:
     secret: "${JWT_SECRET}"
