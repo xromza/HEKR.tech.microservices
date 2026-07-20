@@ -1,5 +1,7 @@
 package ru.xromza.order.config;
 
+import java.util.Map;
+
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -13,6 +15,7 @@ import org.springframework.amqp.support.converter.JacksonJavaTypeMapper.TypePrec
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import ru.xromza.order.event.OrderStatusUpdatedEvent;
 import tools.jackson.databind.json.JsonMapper;
 
 @Configuration
@@ -22,11 +25,12 @@ public class RabbitMQConfig {
         JacksonJsonMessageConverter converter = new JacksonJsonMessageConverter(jsonMapper);
 
         DefaultClassMapper classMapper = new DefaultClassMapper();
-        classMapper.setTrustedPackages("*"); 
+        classMapper.setTrustedPackages("ru.xromza.*");
 
+        classMapper.setIdClassMapping(Map.of(
+                "ru.xromza.order_worker.event.OrderStatusUpdatedEvent", OrderStatusUpdatedEvent.class));
         converter.setClassMapper(classMapper);
         converter.setTypePrecedence(TypePrecedence.TYPE_ID);
-
         return converter;
     }
 
@@ -34,12 +38,9 @@ public class RabbitMQConfig {
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
             ConnectionFactory connectionFactory,
             MessageConverter jsonMessageConverter) {
-
         SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
-
         factory.setMessageConverter(jsonMessageConverter);
-
         return factory;
     }
 
@@ -54,10 +55,28 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding orderBinding(Queue orderQueue, TopicExchange topicExchange) {
+    public Binding orderBinding(Queue orderQueue, TopicExchange orderExchange) {
         return BindingBuilder
                 .bind(orderQueue)
-                .to(topicExchange)
+                .to(orderExchange)
                 .with("order.submitted");
+    }
+
+    @Bean
+    public TopicExchange orderStatusExchange() {
+        return new TopicExchange("order.status.exchange");
+    }
+
+    @Bean
+    public Queue orderStatusQueue() {
+        return new Queue("order.status.queue");
+    }
+
+    @Bean
+    public Binding orderStatusBinding(TopicExchange orderStatusExchange, Queue orderStatusQueue) {
+        return BindingBuilder
+                .bind(orderStatusQueue)
+                .to(orderStatusExchange)
+                .with("order.status.updated");
     }
 }
