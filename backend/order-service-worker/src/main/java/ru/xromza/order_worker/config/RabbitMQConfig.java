@@ -83,4 +83,22 @@ public class RabbitMQConfig {
                 .to(warehouseEventsExchange)
                 .with("inventory.*");
     }
+
+    @Bean
+    public TopicExchange orderStatusExchange() {
+        return new TopicExchange("order.status.exchange");
+    }
+
+    @Bean
+    public Queue orderStatusQueue() {
+        return new Queue("order.status.queue");
+    }
+
+    @Bean
+    public Binding orderStatusBinding(TopicExchange orderStatusExchange, Queue orderStatusQueue) {
+        return BindingBuilder
+                .bind(orderStatusQueue)
+                .to(orderStatusExchange)
+                .with("order.status.updated");
+    }
 }
