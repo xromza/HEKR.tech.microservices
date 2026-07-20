@@ -10,7 +10,6 @@ import ru.xromza.order.dto.OrderResponseDto;
 import ru.xromza.order.dto.OrderSubmittedDto;
 import ru.xromza.order.dto.PreOrderResponseDto;
 import ru.xromza.order.service.OrderService;
-import ru.xromza.order.utils.Status;
 
 import java.util.List;
 
@@ -31,13 +30,13 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<OrderSubmittedDto> createOrder(@Valid @RequestBody OrderRequestDto dto,
-            @RequestHeader("X-User-Id") Long userId) {
-        String uuid = orderService.createOrder(dto, userId);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(
-                OrderSubmittedDto.builder()
-                        .orderId(uuid)
-                        .status(Status.PROCESSING)
-                        .build());
+            @RequestHeader("X-User-Id") Long userId,
+            @RequestHeader("Idempotency-Key") String idempotencyKey) {
+        if (idempotencyKey == null) {
+            return ResponseEntity.badRequest().body(null);
+        }
+        OrderSubmittedDto response = orderService.createOrder(dto, userId, idempotencyKey);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 
     @GetMapping

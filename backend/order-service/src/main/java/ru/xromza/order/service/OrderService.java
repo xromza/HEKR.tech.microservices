@@ -1,13 +1,16 @@
 package ru.xromza.order.service;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,7 @@ import ru.xromza.order.dto.OrderPreviewRequestDto;
 import ru.xromza.order.dto.OrderRequestDto;
 import ru.xromza.order.dto.OrderResponseDto;
 import ru.xromza.order.dto.OrderStatusHistoryResponseDto;
+import ru.xromza.order.dto.OrderSubmittedDto;
 import ru.xromza.order.dto.PreOrderItemResponseDto;
 import ru.xromza.order.dto.PreOrderPriceResponseDto;
 import ru.xromza.order.dto.PreOrderResponseDto;
@@ -35,6 +39,7 @@ import ru.xromza.order.exceptions.ForbiddenException;
 import ru.xromza.order.interfaces.ProductInfoInterface;
 import ru.xromza.order.interfaces.ProductItemsInterface;
 import ru.xromza.order.mapper.OrderItemMapper;
+import ru.xromza.order.utils.Status;
 
 @Service
 @RequiredArgsConstructor
@@ -47,8 +52,24 @@ public class OrderService {
     private final WarehouseClient warehouseClient;
     private final UserClient userClient;
     private final RabbitMQClient rabbitMQClient;
+    private final StringRedisTemplate redisTemplate;
+    private final OrderStatusService orderStatusService;
 
-    public String createOrder(OrderRequestDto dto, Long userId) {
+    public OrderSubmittedDto createOrder(OrderRequestDto dto, Long userId, String idempotency_key) {
+
+        Boolean acquired = redisTemplate.opsForValue()
+                .setIfAbsent("idempotency:" + idempotency_key, "PENDING", Duration.ofMinutes(10));
+
+        if (Boolean.FALSE.equals(acquired)) {
+            log.info("Такой запрос уже был. Возвращаю имеющийся ответ. {}", idempotency_key);
+            String orderId = redisTemplate.opsForValue().get("idempotency:" + idempotency_key);
+            if ("PENDING".equals(orderId)) {
+                throw new ConcurrentModificationException("Запрос уже обрабатывается. Попробуйте позже");
+            }
+            Status status = orderStatusService.getOrderStatus(orderId);
+            return OrderSubmittedDto.builder().orderId(orderId).status(status).build();
+        }
+        log.info("Новый заказ. Оформляем: ", idempotency_key);
         String uuid = UUID.randomUUID().toString();
 
         OrderSubmitEvent event = OrderSubmitEvent.builder()
@@ -60,8 +81,14 @@ public class OrderService {
                 .paymentMethod(dto.getPayment())
                 .userId(userId).build();
         rabbitMQClient.sendOrderEvent(event);
-
-        return uuid;
+        OrderSubmittedDto response = OrderSubmittedDto.builder()
+                .orderId(uuid)
+                .status(Status.PROCESSING)
+                .build();
+        redisTemplate
+                .opsForValue()
+                .set("idempotency:" + idempotency_key, uuid, Duration.ofMinutes(10));
+        return response;
     }
 
     public OrderResponseDto getOrder(String orderId, Long userId) {
@@ -106,8 +133,6 @@ public class OrderService {
         }
         return initialOrders;
     }
-
-   
 
     private void fillChangedByNameInStatusHistory(List<OrderResponseDto> initialOrders) {
         log.info("Заполняю имена пользователей из истории статусов");
