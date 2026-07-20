@@ -7,6 +7,26 @@ services:
     user:
         url: http://user-service:8080
 
+resilience4j:
+    circuitbreaker:
+        instances:
+            catalogService:
+                sliding-window-size: 10
+                failure-rate-threshold: 50
+                wait-duration-in-open-state: 30s
+                permitted-number-of-calls-in-half-open-state: 3
+                record-exceptions:
+                    - org.springframework.web.client.ResourceAccessException 
+                    - java.net.ConnectException                             
+                    - java.net.SocketTimeoutException 
+    retry:
+        instances:
+            catalogService:
+                max-attempts: 2
+                exponential-backoff-multiplier: 2
+                wait-duration: 500ms
+                    
+
 spring:
     application:
         name: order-service-worker

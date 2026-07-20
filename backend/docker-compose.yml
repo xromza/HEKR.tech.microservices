@@ -154,6 +154,8 @@ services:
       - RABBITMQ_PORT=${RABBITMQ_PORT}
       - RABBITMQ_USER=${RABBITMQ_LOGIN}
       - RABBITMQ_PASS=${RABBITMQ_PASS}
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
     networks:
       - hekr-network
 
